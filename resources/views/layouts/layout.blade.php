@@ -12,7 +12,7 @@
     <!-- <script src="js/jquery-3.6.0.min.js"></script> -->
     <script>
         function logout() {
-            $.getJSON("{{route('logout')}}", (res) => {
+            $.getJSON("{{route('logout')}}",{'token':localStorage.getItem('token')}, (res) => {
                 console.log(res);
                 alert(res.msg);
                 location.href = "{{ route('index')}}";

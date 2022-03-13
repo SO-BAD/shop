@@ -45,7 +45,7 @@ class ManagersController extends Controller
                     $managerLoginToken = new ManagerLoginTokens();
 
 
-                    
+
 
                     if ($managerLoginToken->where('managerID', $row[0]->managerID)->count() == 1) {
 
@@ -63,10 +63,6 @@ class ManagersController extends Controller
                     }
 
                     $res = ['stats' => 1, 'msg' => '登入成功', 'data' => ['token' => $token]];
-
-
-
-
                 } catch (\Exception $e) {
                     $res = ['stats' => 0, 'msg' => $e->getMessage()];
                 }
@@ -82,12 +78,17 @@ class ManagersController extends Controller
 
     public function logout(Request $req)
     {
-        // if(){
-
-        // }
+        // echo $req->input('token');
+        $data = ManagerLoginTokens::where("token", $req->input('token'))->first();
         $req->session()->forget('manager');
-        $res = ['status' => 1, "msg" => "登出成功"];
+        if ($data->count()) {
+            $data->delete();
+            $res = ['status' => 1, "msg" => "登出成功"];
+        }else{
+            $res = ['status' =>0, "msg" => "錯誤訊息"];
+        }
         echo json_encode($res);
+        // 
     }
 
     /**

@@ -22,16 +22,16 @@ use App\Http\Middleware\tokenAuth;
 //     return view('welcome');
 // // });
 Route::view('/', 'pages.index')->name('index');
-Route::post('/login', [ManagersController::class, 'login'])->name('login');
+
+
 
 Route::get('/logout', [ManagersController::class, 'logout'])->name('logout');
 
 
-
-Route::post('register', [ManagersController::class, 'store']);
-
 Route::group(['middleware' => 'session'], function () {
     
+    Route::post('/login', [ManagersController::class, 'login'])->name('login');
+    Route::post('register', [ManagersController::class, 'store']);
     Route::view('register', 'managers.register')->name('register');
     Route::view('/login', 'managers.login')->name('loginPage');
     // Route::get('/login',function(){
@@ -44,4 +44,5 @@ Route::group(['middleware' => 'session'], function () {
 
 Route::group(['middleware' => 'protected'], function () {
     Route::post('addMenu', [MenusController::class, 'store'])->name("addMenu");
+    Route::get('showMenu', [MenusController::class, 'show'])->name("showMenu");
 });
