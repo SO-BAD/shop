@@ -1,6 +1,27 @@
-@extends('layouts.layout')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('content')
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{csrf_token()}}">
+    <title>簡易系統</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- <script src="js/jquery-3.6.0.min.js"></script> -->
+    <script>
+        function logout() {
+            $.getJSON("{{route('logout')}}", (res) => {
+                console.log(res);
+                alert(res.msg);
+                location.href = "{{ route('index')}}";
+            })
+        }
+    </script>
+</head>
+
+<body>
 <div class="container">
     <div class="row">
         <div class="col-12 col-sm-6 mx-auto mt-5 ">
@@ -18,7 +39,7 @@
                 </div>
                 <div class="form-group">
                 </div>
-                <button type="button" class="btn btn-primary submit" onclick ="s()">Submit</button>
+                <button type="button" class="btn btn-primary submit" onclick ="login()">Submit</button>
                 <a  class="btn btn-primary" href="{{route('index')}}">返回</a>
             </form>
 
@@ -27,44 +48,29 @@
 </div>
 
 <script>
-    function s(){
+    function login(){
          $.post("{{ route('login')}}",
          {account:$("#account").val(),
             password:$("#password").val(),
             _token:'{{csrf_token()}}'
         },
          (res)=>{
+             console.log(res);
              res = JSON.parse(res)
             if(parseInt(res.stats)==1){
                 localStorage.setItem('token',res.data.token);
+                alert(res.msg);
+                location.href= "{{ route('index')}}";
             }else{
-                console.log(res.msg);
+                alert(res.msg);
             }
         })
     }
     
-        // var form = new FormData(document.querySelector("form"));
-        // $.post("/login",form,(res)=>{
-        //     console.log(res);
-        // })
-        
-        // $.ajax({
-        //     url:"/login",
-        //     data:form,
-        //     type:'post',
-        //     processData:false,
-        //     contentType:false,
-        //     cache:false,
-        //     success:function(res){
-        //         console.log(res);
-        //     },
-        //     error:function(res){
-        //         console.log(res);
-        //     }
-        // })
-        
     
 </script>
 
 
-@stop
+</body>
+
+</html>
