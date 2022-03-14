@@ -28,20 +28,18 @@ class tokenAuth
             abort(404);
         } else {
             if ($request->hasHeader('Authorization')) {
-                $token = str_replace("Bearer ","",$request->header('Authorization'));
+                $token = str_replace("Bearer ", "", $request->header('Authorization'));
                 $data = ManagerLoginTokens::where('token', $token);
 
                 if ($data->count()) {
                     return $next($request);
-                } else {
-                    session()->forget('manager');
-                    $res = ['status' => 0, 'msg' => 'Unauthorized'];
-                    return response()->json($res, 401);
                 }
-            } else {
-                $res = ['status' => 0, 'msg' => 'Unauthorized'];
-                return response()->json($res, 401);
             }
+            if (session()->has('manager')) {
+                session()->forget('manager');
+            }
+            $res = ['status' => 0, 'msg' => 'Unauthorized'];
+            return response()->json($res, 401);
         }
     }
 }

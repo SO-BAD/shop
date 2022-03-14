@@ -7,6 +7,8 @@ use App\Http\Controllers\MenusController;
 use App\Http\Controllers\PagesController;
 
 use App\Http\Middleware\tokenAuth;
+use App\Models\MenuItems;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -40,9 +42,21 @@ Route::group(['middleware' => 'session'], function () {
     Route::get('addMenuPage', function () {
         return view("menus.addMenu");
     })->name("addMenuPage");
+    Route::get('editMenuPage', [MenusController::class,'showMenus'])->name("editMenuPage");
+    Route::get('delCategoryPage', [MenusController::class,'showCategories'])->name("delCategoryPage");
+
+
+    Route::get('editItemPage', [MenusController::class,'showItems'])->name("editItemPage");
 });
 
 Route::group(['middleware' => 'protected'], function () {
     Route::post('addMenu', [MenusController::class, 'store'])->name("addMenu");
-    Route::get('showMenu', [MenusController::class, 'show'])->name("showMenu");
+    Route::post('editMenu', [MenusController::class, 'edit'])->name("editMenu");
+    Route::post('delCategory', [MenusController::class, 'del'])->name("delCategory");
+    
+    
+    Route::post('delItem', [MenusController::class, 'delItem'])->name("delItem");
+    Route::post('showItem', [MenusController::class, 'showItem'])->name("showItem");
+    Route::post('editItem', [MenusController::class, 'editItem'])->name("editItem");
+    Route::post('editItemSh', [MenusController::class, 'editItemSh'])->name("editItemSh");
 });

@@ -3,7 +3,7 @@
 
 
 @section('title')
-<h1>add cotegory</h1>
+<h1>add Menu</h1>
 @stop
 
 
@@ -93,6 +93,11 @@
             },
             success:function(res){
                 console.log(res);
+                res = JSON.parse(res);
+                alert(res.msg)
+                if(parseInt(res.status) == 1){
+                    location.reload();
+                }
             },
             error:function(res){
                 console.log(res);

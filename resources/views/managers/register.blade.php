@@ -65,6 +65,7 @@
          name:$("#name").val(),
         _token:'{{csrf_token()}}'},
         (res)=>{
+            console.log(res)
             res = JSON.parse(res);
             if(parseInt(res.status)==1){
                 alert(res.msg);
