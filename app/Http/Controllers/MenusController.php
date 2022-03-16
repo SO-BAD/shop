@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\MenuCategories;
 use App\Models\MenuItems;
+
 
 class MenusController extends Controller
 {
@@ -98,9 +100,26 @@ class MenusController extends Controller
 
     public function showOnMenus()
     {
-        $categories = MenuCategories::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
-        $items = MenuItems::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
-        return view("menus.showOnMenus", ['categories' => $categories, 'items' => $items]);
+        // $categories = MenuCategories::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
+        // $items = MenuItems::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
+        // $data = MenuItems::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
+        // $data = MenuItems::where("toggle", 1)->get();
+        $data = DB::select("select items.name as iName, items.price,items.orderBy, cate.name from menuitems as items join menucategories as cate on items.categoryID = cate.categoryID AND items.toggle = 1 AND cate.toggle = 1 order by cate.orderBy, items.orderBy ");
+
+
+
+
+
+
+        // return view("menus.showOnMenus", ['categories' => $categories, 'items' => $items]);
+        return view("menus.showOnMenus", ['data' => $data]);
+
+
+
+
+
+
+
     }
 
     public function getOnMenus()
@@ -200,10 +219,16 @@ class MenusController extends Controller
         } else {
             date_default_timezone_set("Asia/Taipei");
 
-            if (MenuCategories::where('name', $category['name'])->count()) {
-                $menuCategoryId = MenuCategories::where('name', $category['name'])->first()->categoryID;
+
+
+
+            $name = MenuCategories::where('name', $category['name']);
+            if ($name->count()) {
+                $menuCategoryId = $name->first()->categoryID;
             } else {
-                $menuCategoryId = (MenuCategories::max('id') == 0) ? 1 : (MenuCategories::max('id') + 1);
+                $id = MenuCategories::max('id');
+
+                $menuCategoryId = ( $id== 0) ? 1 : ($id + 1);
 
                 $menuCategory = new MenuCategories();
                 $menuCategory->categoryID = md5($menuCategoryId);
@@ -223,25 +248,36 @@ class MenusController extends Controller
 
 
 
-
-            $menuItemId = (MenuItems::max('id') == 0) ? 1 : (MenuItems::max('id') + 1);
+            $menuItemId = MenuItems::max('id') +1;
 
             $itemMaxOrderBy = MenuItems::max('orderBy');
+            $saveData = [];
             foreach ($items as $key => $item) {
-                $menuItem = new MenuItems();
-                $menuItem->itemID = md5(($menuItemId + $key));
+                
+                $categoryID = (strlen($menuCategoryId) == 32) ? $menuCategoryId : md5($menuCategoryId);
+                $saveData[] = ['itemID'=>md5($menuItemId + $key),
+                'categoryID'=>$categoryID,
+                'name'=> $item['name'],
+                'price'=> $item['price'],
+                'orderBy'=> ($itemMaxOrderBy + $key +1),
+                'toggle'=> $item['toggle'],
+                'createdTime'=> date("U"),
+                'updatedTime'=> date("U"),
+            ];
+            
+            // $menuItem = new MenuItems();
+                // $menuItem->itemID = md5(($menuItemId + $key));
+                // $menuItem->categoryID = (strlen($menuCategoryId) == 32) ? $menuCategoryId : md5($menuCategoryId);
 
-                $menuItem->categoryID = (strlen($menuCategoryId) == 32) ? $menuCategoryId : md5($menuCategoryId);
-
-                $menuItem->name = $item['name'];
-                $menuItem->price = $item['price'];
-                $menuItem->orderBy = ($itemMaxOrderBy + $key +1);
-                $menuItem->toggle = $item['toggle'];
-                $menuItem->createdTime = date("U");
-                $menuItem->updatedTime = date("U");
-                $menuItem->save();
-                unset($menuItem);
+                // $menuItem->name = $item['name'];
+                // $menuItem->price = $item['price'];
+                // $menuItem->orderBy = ($itemMaxOrderBy + $key +1);
+                // $menuItem->toggle = $item['toggle'];
+                // $menuItem->createdTime = date("U");
+                // $menuItem->updatedTime = date("U");
+                // $menuItem->save();
             }
+            MenuItems::insert($saveData);
 
             $res = ['status' => 1, 'msg' => "菜單建立成功"];
         }
@@ -314,6 +350,8 @@ class MenusController extends Controller
                 $ck_ewOrderBy[] = $item['orderBy'];
         }
 
+
+
         if (count($error)) {
             $res = ['status' => 0, 'msg' => implode(",", $error)];
         } else {
@@ -338,25 +376,42 @@ class MenusController extends Controller
                 echo $e->getMessage();
             }
 
-
+            $saveData = [];
+            $maxItemID = MenuItems::max('id') +1 ;
+            $maxItemOrderBy = MenuItems::max('orderBy') +1;
             foreach ($items as $item) {
                 if ($item['del']) {
                     $nowItem = MenuItems::where('itemID', $item['itemID'])->first();
                     $nowItem->delete();
                 } else if ($item['itemID'] == "") {
-                    $nowItem = new MenuItems();
 
-                    $nowItem->itemID = md5(MenuItems::max('id') + 1);
-                    $nowItem->categoryID = $category['categoryID'];
-                    $nowItem->name = $item['name'];
-                    $nowItem->price = $item['price'];
-                    $nowItem->orderBy = (MenuItems::max('orderBy') + 1);
+                    $saveData[] = [
+                                    'itemID'=>md5($maxItemID),
+                                    'categoryID'=>$category['categoryID'],
+                                    'name'=>$item['name'],
+                                    'price'=>$item['price'],
+                                    'orderBy'=>$maxItemOrderBy,
+                                    'toggle'=>$item['toggle'],
+                                    'createdTime'=>date("U"),
+                                    'updatedTime'=>date("U"),
+                                    ];
+                    $maxItemID++;
+                    $maxItemOrderBy++;
 
-                    $nowItem->toggle = $item['toggle'];
-                    $nowItem->createdTime = date("U");
-                    $nowItem->updatedTime = date("U");
+                    // $nowItem = new MenuItems();
 
-                    $nowItem->save();
+                    // $nowItem->itemID = md5(MenuItems::max('id') + 1);
+                    // $nowItem->categoryID = $category['categoryID'];
+                    // $nowItem->name = $item['name'];
+                    // $nowItem->price = $item['price'];
+                    // $nowItem->orderBy = (MenuItems::max('orderBy') + 1);
+
+                    // $nowItem->toggle = $item['toggle'];
+                    // $nowItem->createdTime = date("U");
+                    // $nowItem->updatedTime = date("U");
+
+                    // $nowItem->save();
+
                 } else if ($item['itemID'] != "") {
                     $nowItem = MenuItems::where('itemID', $item['itemID'])->first();
                     $nowItem->name = $item['name'];
@@ -368,7 +423,8 @@ class MenusController extends Controller
                     $nowItem->save();
                 }
             }
-
+            if(count($saveData))
+                MenuItems::insert($saveData);
 
 
 
@@ -424,3 +480,4 @@ class MenusController extends Controller
         echo json_encode($res);
     }
 }
+ 

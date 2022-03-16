@@ -26,32 +26,9 @@
                     <div style="width:20%">orderBy</div>
                 </div>
             </div>
-            @foreach($categories as $k =>$category)
-            <div class="mt-3">
-                <div class="d-flex text-center ">
-                    <div style="width:10% ;color:red;">Category
-                    </div>
-                    <div style="width:10%">{{ $category['name'] }}</div>
-                    <div style="width:10%"></div>
-                    <div style="width:10%"></div>
-                    <div style="width:20%;color:red;">{{ $category['orderBy'] }}</div>
-                </div>
-            </div>
-            @foreach($items as $k =>$item)
-            @if($item['categoryID']==$category['categoryID'])
-            <div class="">
-                <div class="d-flex text-center ">
-                    <div style="width:10% ;">item
-                    </div>
-                    <div style="width:10%">{{ $item['name'] }}</div>
-                    <div style="width:10%"></div>
-                    <div style="width:10%">{{ $item['price'] }}</div>
-                    <div style="width:20%">{{ $item['orderBy'] }}</div>
-                </div>
-            </div>
-            @endif
-            @endforeach
-            @endforeach
+            <pre>
+            {{ print_r($data) }}
+            </pre>
         </div>
         <div class="col-12 mx-auto" id="app">
 
@@ -73,8 +50,8 @@
             success: function(res) {
                 res = JSON.parse(res);
                 console.log(res);
-                $("#origin").remove();
-                vue(res.data);
+                // $("#origin").remove();
+                // vue(res.data);
             },
             error: function(res) {
                 console.log(res);
