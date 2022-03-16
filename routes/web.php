@@ -39,6 +39,9 @@ Route::group(['middleware' => 'session'], function () {
     // Route::get('/login',function(){
     //     return view('managers.login');
     // })->name('loginPage');
+
+    
+    Route::get('showOnMenuPage', [MenusController::class,'showOnMenus'])->name("showOnMenuPage");
     Route::get('addMenuPage', function () {
         return view("menus.addMenu");
     })->name("addMenuPage");
@@ -54,6 +57,7 @@ Route::group(['middleware' => 'protected'], function () {
     Route::post('editMenu', [MenusController::class, 'edit'])->name("editMenu");
     Route::post('delCategory', [MenusController::class, 'del'])->name("delCategory");
     
+    Route::get('getOnMenus', [MenusController::class,'getOnMenus'])->name("getOnMenus");
     
     Route::post('delItem', [MenusController::class, 'delItem'])->name("delItem");
     Route::post('showItem', [MenusController::class, 'showItem'])->name("showItem");

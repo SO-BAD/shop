@@ -24,7 +24,7 @@ class sessionAuth
                 return redirect('/');
             }
         }else{
-            if($path =='addMenuPage'){
+            if($path !='login'&& $path !='register'){
                 return redirect('/');
             }
         }

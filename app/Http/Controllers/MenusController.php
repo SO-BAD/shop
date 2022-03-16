@@ -96,6 +96,38 @@ class MenusController extends Controller
         // return MenuItems::all();
     }
 
+    public function showOnMenus()
+    {
+        $categories = MenuCategories::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
+        $items = MenuItems::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
+        return view("menus.showOnMenus", ['categories' => $categories, 'items' => $items]);
+    }
+
+    public function getOnMenus()
+    {
+        $categories = MenuCategories::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
+        $items = MenuItems::where("toggle", 1)->orderBy("orderBy", "DESC")->get();
+        $res = ['status' => 1, "msg" => "成功取得菜單內容", "data" => []];
+        foreach ($categories as $category) {
+            $data = [
+                "categoryID" => $category['categoryID'],
+                "name" => $category['name'],
+                "menuItems" => [],
+            ];
+            foreach ($items as $item) {
+                if ($category['categoryID'] == $item['categoryID']) {
+                    $data['menuItems'][] = [
+                        'name' => $item['name'],
+                        'price' => $item['price'],
+                    ];
+                }
+            }
+            $res['data'][] = $data;
+        }
+        echo json_encode($res);
+    }
+
+
     public function delItem(Request $req)
     {
         $row = MenuItems::where('itemID', $req->itemID);
@@ -132,8 +164,16 @@ class MenusController extends Controller
         // print_r($items);
 
 
+        if ($category['name'] == "") {
+            $error[] = "category不得為空";
+        }
+
 
         foreach ($items as $item) {
+
+            if ($item['name'] == "" || $item['price'] == "") {
+                $error[] = "item不得為空";
+            }
             if (in_array($item['name'], $ck_reItem)) {
                 $error[] = $item['name'] . "名稱重複";
             }
@@ -185,6 +225,8 @@ class MenusController extends Controller
 
 
             $menuItemId = (MenuItems::max('id') == 0) ? 1 : (MenuItems::max('id') + 1);
+
+            $itemMaxOrderBy = MenuItems::max('orderBy');
             foreach ($items as $key => $item) {
                 $menuItem = new MenuItems();
                 $menuItem->itemID = md5(($menuItemId + $key));
@@ -193,7 +235,7 @@ class MenusController extends Controller
 
                 $menuItem->name = $item['name'];
                 $menuItem->price = $item['price'];
-                $menuItem->orderBy = (MenuItems::max('orderBy') + $key + 1);
+                $menuItem->orderBy = ($itemMaxOrderBy + $key +1);
                 $menuItem->toggle = $item['toggle'];
                 $menuItem->createdTime = date("U");
                 $menuItem->updatedTime = date("U");
@@ -233,6 +275,11 @@ class MenusController extends Controller
 
         $error = [];
         $ck_reItem = [];
+        $ck_ewOrderBy = [];
+
+        if ($category['name'] == "" || $category['orderBy'] == "") {
+            $error[] = "category不得為空";
+        }
 
         $rowGet = MenuCategories::where('name', $category['name'])->get();
         $row = MenuCategories::where('name', $category['name'])->first();
@@ -243,19 +290,29 @@ class MenusController extends Controller
 
 
         foreach ($items as $item) {
-            if($item['name']==""||$item['price']==""||$item['orderBy']==""){
+            if (($item['name'] == "" || $item['price'] == "" || $item['orderBy'] == "") && $item['itemID'] != "") {
+                $error[] = "修改不得為空";
+            }
+            if (($item['name'] == "" || $item['price'] == "") && $item['itemID'] == "") {
                 $error[] = "新增不得為空";
             }
+
             if (in_array($item['name'], $ck_reItem)) {
                 $error[] = $item['name'] . "名稱重複";
             }
 
-            if ($item['price'] < 1 ) {
+            if (in_array($item['orderBy'], $ck_ewOrderBy)) {
+                $error[] = $item['name'] . "排序重複";
+            }
+
+            if ($item['price'] < 1) {
                 $error[] = $item['name'] . "金額須大於0";
             }
             $ck_reItem[]  = $item['name'];
-        }
 
+            if ($item['orderBy'] != "")
+                $ck_ewOrderBy[] = $item['orderBy'];
+        }
 
         if (count($error)) {
             $res = ['status' => 0, 'msg' => implode(",", $error)];
@@ -270,44 +327,44 @@ class MenusController extends Controller
                 $category2->save();
             }
 
-            try{
-            $category1 = MenuCategories::where("categoryID", $category['categoryID'])->first();
-            $category1->orderBy = $category['orderBy'];
-            $category1->name = $category['name'];
-            $category1->toggle = $category['toggle'];
-            $category1->updatedTime = date("U");
-            $category1->save();
-
-            }
-            catch (\Exception $e) {
+            try {
+                $category1 = MenuCategories::where("categoryID", $category['categoryID'])->first();
+                $category1->orderBy = $category['orderBy'];
+                $category1->name = $category['name'];
+                $category1->toggle = $category['toggle'];
+                $category1->updatedTime = date("U");
+                $category1->save();
+            } catch (\Exception $e) {
                 echo $e->getMessage();
             }
-            
+
 
             foreach ($items as $item) {
-                if($item['del']){
-                    $nowItem = MenuItems::where('itemID',$item['itemID'])->first();
+                if ($item['del']) {
+                    $nowItem = MenuItems::where('itemID', $item['itemID'])->first();
                     $nowItem->delete();
-                }else if($item['itemID'] == ""){
+                } else if ($item['itemID'] == "") {
                     $nowItem = new MenuItems();
 
-                    $nowItem->itemID = md5(MenuItems::max('id')+1);
+                    $nowItem->itemID = md5(MenuItems::max('id') + 1);
                     $nowItem->categoryID = $category['categoryID'];
                     $nowItem->name = $item['name'];
                     $nowItem->price = $item['price'];
-                    $nowItem->orderBy = (MenuItems::max('orderBy')+1);
+                    $nowItem->orderBy = (MenuItems::max('orderBy') + 1);
+
                     $nowItem->toggle = $item['toggle'];
-                    $nowItem->createdTime= date("U");
-                    $nowItem->updatedTime= date("U");
+                    $nowItem->createdTime = date("U");
+                    $nowItem->updatedTime = date("U");
 
                     $nowItem->save();
-                }else if($item['itemID'] != ""){
-                    $nowItem = MenuItems::where('itemID',$item['itemID'])->first();
+                } else if ($item['itemID'] != "") {
+                    $nowItem = MenuItems::where('itemID', $item['itemID'])->first();
                     $nowItem->name = $item['name'];
                     $nowItem->price = $item['price'];
                     $nowItem->orderBy = $item['orderBy'];
                     $nowItem->toggle = $item['toggle'];
-                    
+                    $nowItem->updatedTime = date("U");
+
                     $nowItem->save();
                 }
             }
@@ -338,7 +395,8 @@ class MenusController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function showCategories(){
+    public function showCategories()
+    {
         $categories = MenuCategories::all();
         return view("menus.delCategory", ['categories' => $categories]);
     }
@@ -346,6 +404,23 @@ class MenusController extends Controller
     public function del(Request $req)
     {
         //
-        echo "a";
+        $rows = MenuItems::where("categoryID", $req->categoryID);
+        if ($rows) {
+            for ($i = 0; $i < $rows->get()->count(); $i++) {
+                $row = MenuItems::where("categoryID", $req->categoryID)->first();
+                $row->delete();
+            }
+        }
+
+        $rows = MenuCategories::where("categoryID", $req->categoryID);
+        if ($rows->get()->count()) {
+            $row = MenuCategories::where("categoryID", $req->categoryID)->first();
+            $row->delete();
+            $res = ['status' => 1, 'msg' => '刪除成功'];
+        } else {
+
+            $res = ['status' => 0, 'msg' => '查無資料'];
+        }
+        echo json_encode($res);
     }
 }

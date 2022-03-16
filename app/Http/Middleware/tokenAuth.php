@@ -28,11 +28,17 @@ class tokenAuth
             abort(404);
         } else {
             if ($request->hasHeader('Authorization')) {
-                $token = str_replace("Bearer ", "", $request->header('Authorization'));
-                $data = ManagerLoginTokens::where('token', $token);
+                if (str_contains($request->header('Authorization'), "Bearer ")) {
+                    $token = str_replace("Bearer ", "", $request->header('Authorization'));
 
-                if ($data->count()) {
-                    return $next($request);
+                    $a = preg_match("/[0-9a-z]{32}/", $token);
+                    if ($a) {
+                        $data = ManagerLoginTokens::where('token', $token);
+
+                        if ($data->count()) {
+                            return $next($request);
+                        }
+                    }
                 }
             }
             if (session()->has('manager')) {

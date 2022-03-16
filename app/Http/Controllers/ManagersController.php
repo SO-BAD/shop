@@ -79,10 +79,11 @@ class ManagersController extends Controller
     public function logout(Request $req)
     {
         // echo $req->input('token');
-        $data = ManagerLoginTokens::where("token", $req->input('token'))->first();
+
+        $data = ManagerLoginTokens::where("token", $req->input('token'));
         $req->session()->forget('manager');
         if ($data->count()) {
-            $data->delete();
+            $data->first()->delete();
             $res = ['status' => 1, "msg" => "登出成功"];
         }else{
             $res = ['status' =>0, "msg" => "錯誤訊息"];

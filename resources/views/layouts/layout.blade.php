@@ -12,15 +12,18 @@
     <!-- <script src="js/jquery-3.6.0.min.js"></script> -->
     <script>
         function logout() {
-            $.getJSON("{{route('logout')}}",{'token':localStorage.getItem('token')}, (res) => {
+            $.getJSON("{{route('logout')}}", {
+                'token': localStorage.getItem('token')
+            }, (res) => {
                 console.log(res);
                 alert(res.msg);
                 location.href = "{{ route('index')}}";
             })
         }
     </script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js" integrity="sha384-VHvPCCyXqtD5DqJeNxl2dtTyhF78xXNXdkwX1CZeRusQfRKp+tA7hAShOK/B/fQ2" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.min.js" integrity="sha384-VHvPCCyXqtD5DqJeNxl2dtTyhF78xXNXdkwX1CZeRusQfRKp+tA7hAShOK/B/fQ2" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/vue@next"></script>
 </head>
 
 <body>
@@ -34,7 +37,8 @@
     <a href="{{route('addMenuPage')}}">新增菜單</a>
     <a href="{{route('editMenuPage')}}">修改菜單</a>
     <a href="{{route('delCategoryPage')}}">刪除種類</a>
-    <a href="{{route('editItemPage')}}">修改品項</a>
+    <a href="{{route('showOnMenuPage')}}">顯示上架中</a>
+    <!-- <a href="{{route('editItemPage')}}">修改品項</a> -->
 
 
 
